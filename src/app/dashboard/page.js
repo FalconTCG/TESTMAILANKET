@@ -1,6 +1,10 @@
 // Static content with no imports or hooks
-function Dashboard() {
-  return <p>Redirecting...</p>;
-}
-
-export default Dashboard; 
+export default function Dashboard() {
+  return (
+    <div>
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <p>Redirecting to Dashboard...</p>
+      </div>
+    </div>
+  );
+} 

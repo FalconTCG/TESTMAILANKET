@@ -16,6 +16,12 @@ const nextConfig = {
   skipTrailingSlashRedirect: true,
   skipMiddlewareUrlNormalize: true,
   output: 'standalone',
+  // Explicitly disable static generation for specific paths
+  publicRuntimeConfig: {
+    skipValidation: ['dashboard', 'dashboard-view']
+  },
+  // Exclude entire pages from build
+  excludePages: ['/dashboard/**'],
 };
 
 module.exports = nextConfig; 
