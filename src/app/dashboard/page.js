@@ -1,10 +1,20 @@
-'use client';
+// This is a static page shell that doesn't use any client hooks during build
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+export const runtime = 'edge';
 
+// Using a completely static server component
+export default function Dashboard() {
+  return (
+    <ClientDashboard />
+  );
+}
+
+// Client component wrapper
+'use client';
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
-
-// Explicitly tell Next.js to not statically generate this page
-export const dynamic = 'force-dynamic';
 
 // Loading component for suspense fallback
 function Loading() {
@@ -17,7 +27,7 @@ function Loading() {
 }
 
 // Dynamically import the client component with no SSR
-const DashboardClient = dynamic(
+const DashboardClientComponent = dynamic(
   () => import('./client'),
   { 
     ssr: false,
@@ -25,10 +35,10 @@ const DashboardClient = dynamic(
   }
 );
 
-export default function Dashboard() {
+function ClientDashboard() {
   return (
     <Suspense fallback={<Loading />}>
-      <DashboardClient />
+      <DashboardClientComponent />
     </Suspense>
   );
 } 
