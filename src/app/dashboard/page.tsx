@@ -349,11 +349,7 @@ function Dashboard(): React.ReactElement {
             const percentage = Math.round((value / total) * 100);
             return `${value} yanıt (%${percentage})`;
           }
-        },
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        padding: 12,
-        cornerRadius: 6,
-        displayColors: true
+        }
       },
       datalabels: {
         color: '#fff',
