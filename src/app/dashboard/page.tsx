@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -22,6 +22,14 @@ ChartJS.register(
 
 // Linter hatalarını önlemek için açık bir dönüş tipi belirtiyorum
 function Dashboard(): React.ReactElement {
+  return (
+    <Suspense fallback={<div className="text-center py-10">Yükleniyor...</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent(): React.ReactElement {
   const searchParams = useSearchParams();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
