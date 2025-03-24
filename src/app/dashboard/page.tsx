@@ -3,8 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import Link from 'next/link';
-// useSearchParams'ı kaldırıyoruz çünkü client component'ten gelecek
-// import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { 
   Chart as ChartJS, 
   ArcElement,
@@ -13,8 +12,15 @@ import {
   Title,
 } from 'chart.js';
 
-// Dynamic export to disable static rendering
+// Static generation'ı devre dışı bırak ve sadece client-side rendering kullan
 export const dynamic = 'force-dynamic';
+
+// Client-side routing için cache ayarları
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+
+// Statik olarak oluşturulmasını engelle
+export const generateStaticParams = () => [];
 
 // ChartJS'i kaydet
 ChartJS.register(
@@ -24,14 +30,13 @@ ChartJS.register(
   Title
 );
 
-// Ana Dashboard bileşeni - artık useSearchParams içermiyor
-export default function Dashboard({ 
-  initialSurveyId, 
-  initialView 
-}: { 
-  initialSurveyId: string | null, 
-  initialView: string | null 
-}): React.ReactElement {
+// Ana Dashboard bileşeni
+export default function Dashboard(): React.ReactElement {
+  // Client tarafında çalışan useSearchParams hook'unu kullanalım
+  const searchParams = useSearchParams();
+  const initialSurveyId = searchParams?.get('surveyId');
+  const initialView = searchParams?.get('view');
+
   const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
