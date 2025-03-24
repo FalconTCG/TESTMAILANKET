@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { 
   Chart as ChartJS, 
   ArcElement,
@@ -14,18 +14,29 @@ import {
 
 // Static generation'ı devre dışı bırak ve sadece client-side rendering kullan
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
-// Suspense sınırı içinde render edilecek içerik
-function DashboardContent() {
-  // Client tarafında çalışan useSearchParams hook'unu kullanalım
-  const searchParams = useSearchParams();
-  const initialSurveyId = searchParams?.get('surveyId');
-  const initialView = searchParams?.get('view');
+// ChartJS'i kaydet
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title
+);
+
+// Ana dashboard bileşeni
+export default function Dashboard() {
+  // Router kullan
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [initialSurveyId, setInitialSurveyId] = useState(null);
+  const [initialView, setInitialView] = useState(null);
 
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedSurveyId, setSelectedSurveyId] = useState(initialSurveyId);
+  const [selectedSurveyId, setSelectedSurveyId] = useState(null);
   const [surveyResponses, setSurveyResponses] = useState([]);
   
   // View mode state (normal, edit, responses)
@@ -49,6 +60,29 @@ function DashboardContent() {
   // Anket listesini yenileme için bir state değişkeni
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Browser tarafında çalıştığında URL parametrelerini oku
+  useEffect(() => {
+    setMounted(true);
+    // URL'den parametreleri alma
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const surveyId = urlParams.get('surveyId');
+      const view = urlParams.get('view');
+      
+      setInitialSurveyId(surveyId);
+      setInitialView(view);
+      
+      if (surveyId) {
+        setSelectedSurveyId(surveyId);
+        if (view === 'edit') {
+          setViewMode('edit');
+        } else {
+          setViewMode('normal');
+        }
+      }
+    }
+  }, []);
+
   // ChartDataLabels eklentisini tarayıcı tarafında yükle
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -64,38 +98,10 @@ function DashboardContent() {
     }
   }, []);
 
-  // URL'den surveyId ve view alınacak
-  useEffect(() => {
-    const surveyId = initialSurveyId;
-    const view = initialView;
-    
-    if (surveyId) {
-      setSelectedSurveyId(surveyId);
-      if (view === 'edit') {
-        setViewMode('edit');
-      } else {
-        setViewMode('normal');
-      }
-    } else {
-      setViewMode('normal');
-    }
-  }, [initialSurveyId, initialView]);
-
-  // Düzenleme modunda anket verilerini form içine doldur
-  useEffect(() => {
-    if (viewMode === 'edit' && selectedSurveyId) {
-      const selectedSurvey = surveys.find(s => s.id === selectedSurveyId);
-      if (selectedSurvey) {
-        setEditForm({
-          title: selectedSurvey.title,
-          description: selectedSurvey.description
-        });
-      }
-    }
-  }, [viewMode, selectedSurveyId, surveys]);
-
   // Anketleri getirme
   useEffect(() => {
+    if (!mounted) return;
+    
     const fetchSurveys = async () => {
       try {
         setLoading(true);
@@ -129,60 +135,74 @@ function DashboardContent() {
     };
 
     fetchSurveys();
-  }, [refreshTrigger]); // refreshTrigger değiştiğinde anketleri tekrar getir
+  }, [mounted]); 
 
   // Anket yanıtlarını getirme
   useEffect(() => {
-    if (selectedSurveyId) {
-      console.log('Seçilen anket değişti:', selectedSurveyId);
-      
-      const fetchResponses = async () => {
-        try {
-          const response = await fetch(`/api/surveys/${selectedSurveyId}`);
+    if (!mounted || !selectedSurveyId) return;
+    
+    const fetchResponses = async () => {
+      try {
+        const response = await fetch(`/api/surveys/${selectedSurveyId}`);
+        
+        if (!response.ok) {
+          throw new Error('Yanıtlar getirilemedi');
+        }
+        
+        const data = await response.json();
+        
+        // API'den gelen yanıtları uygulama için uygun formata dönüştür
+        if (data.responses && Array.isArray(data.responses)) {
+          const formattedResponses = data.responses.map((item) => ({
+            id: item.id,
+            surveyId: item.surveyId,
+            respondent: item.email,
+            submittedAt: item.createdAt,
+            answers: [
+              { 
+                question: 'Değerlendirmeniz', 
+                answer: `${item.rating} - ${item.rating === 5 ? 'Çok iyi' : 
+                                        item.rating === 4 ? 'İyi' : 
+                                        item.rating === 3 ? 'Orta' : 
+                                        item.rating === 2 ? 'Kötü' : 
+                                        item.rating === 1 ? 'Çok kötü' : 'Belirtilmemiş'}` 
+              },
+              { question: 'Yorumunuz', answer: item.comment || '-' }
+            ]
+          }));
           
-          if (!response.ok) {
-            throw new Error('Yanıtlar getirilemedi');
-          }
-          
-          const data = await response.json();
-          
-          // API'den gelen yanıtları uygulama için uygun formata dönüştür
-          if (data.responses && Array.isArray(data.responses)) {
-            const formattedResponses = data.responses.map((item) => ({
-              id: item.id,
-              surveyId: item.surveyId,
-              respondent: item.email,
-              submittedAt: item.createdAt,
-              answers: [
-                { 
-                  question: 'Değerlendirmeniz', 
-                  answer: `${item.rating} - ${item.rating === 5 ? 'Çok iyi' : 
-                                          item.rating === 4 ? 'İyi' : 
-                                          item.rating === 3 ? 'Orta' : 
-                                          item.rating === 2 ? 'Kötü' : 
-                                          item.rating === 1 ? 'Çok kötü' : 'Belirtilmemiş'}` 
-                },
-                { question: 'Yorumunuz', answer: item.comment || '-' }
-              ]
-            }));
-            
-            console.log('Filtrelenen yanıtlar:', formattedResponses.length);
-            setSurveyResponses(formattedResponses);
-          } else {
-            setSurveyResponses([]);
-          }
-        } catch (error) {
-          console.error('Yanıtları getirme hatası:', error);
-          setError('Yanıtlar yüklenirken bir hata oluştu');
+          setSurveyResponses(formattedResponses);
+        } else {
           setSurveyResponses([]);
         }
-      };
-      
-      fetchResponses();
-    }
-  }, [selectedSurveyId]);
+      } catch (error) {
+        console.error('Yanıtları getirme hatası:', error);
+        setError('Yanıtlar yüklenirken bir hata oluştu');
+        setSurveyResponses([]);
+      }
+    };
+    
+    fetchResponses();
+  }, [selectedSurveyId, mounted]);
 
-  // Diğer fonksiyonlar ve render kodu
+  // Anket seçildiğinde
+  const handleSurveySelection = (surveyId) => {
+    setSelectedSurveyId(surveyId);
+    // URL'yi güncelle ancak useSearchParams kullanma
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('surveyId', surveyId);
+      window.history.pushState({}, '', url);
+    }
+  };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -241,7 +261,7 @@ function DashboardContent() {
                 {surveys.map((survey) => (
                   <div 
                     key={survey.id}
-                    onClick={() => setSelectedSurveyId(survey.id)}
+                    onClick={() => handleSurveySelection(survey.id)}
                     className={`bg-white border rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer p-4 ${
                       selectedSurveyId === survey.id ? 'ring-2 ring-indigo-500' : ''
                     }`}
@@ -271,21 +291,4 @@ function DashboardContent() {
       </div>
     </div>
   );
-}
-
-// Ana dashboard export bileşeni
-export default function Dashboard() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>}>
-      <DashboardContent />
-    </Suspense>
-  );
-}
-
-// ChartJS'i kaydet
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  Title
-); 
+} 
