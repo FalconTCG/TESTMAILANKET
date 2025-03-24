@@ -350,70 +350,26 @@ function Dashboard(): React.ReactElement {
             return `${value} yanıt (%${percentage})`;
           }
         },
-        titleFont: { size: 14, weight: 'bold' },
-        bodyFont: { size: 13 },
         backgroundColor: 'rgba(0,0,0,0.8)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        borderColor: 'rgba(255,255,255,0.3)',
-          borderWidth: 1,
-        cornerRadius: 8,
-        displayColors: true,
-        boxPadding: 5,
         padding: 12,
-        usePointStyle: true,
+        cornerRadius: 6,
+        displayColors: true
       },
-      // datalabels eklentisi için ayarlar
       datalabels: {
-        formatter: (value: number, ctx: any) => {
-          // Emojileri almak için etiketleri kullan
-          const label = ctx.chart.data.labels[ctx.dataIndex] || '';
-          const emoji = label.split(' ')[0]; // İlk kelime emoji
-          
-          const total = ctx.dataset.data.reduce((sum: number, data: number) => sum + data, 0);
-          const percentage = Math.round((value / total) * 100);
-          
-          // Emoji ve sayı+yüzde birlikte göster
-          return [`${emoji}`, `${value} (%${percentage})`];
-        },
         color: '#fff',
         font: {
-          weight: 'bold',
-          size: 14
+          weight: 'bold' as const,
+          size: 13
         },
-        textAlign: 'center',
-        textStrokeColor: '#000',
-        textStrokeWidth: 1,
-        textShadowBlur: 3,
-        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-        anchor: 'center',
-        align: 'center',
-        offset: 0
+        formatter: (value: number, context: any) => {
+          const total = context.dataset.data.reduce((acc: number, data: number) => acc + data, 0);
+          const percentage = Math.round((value / total) * 100);
+          return percentage > 5 ? `%${percentage}` : '';
+        }
       }
     },
-    cutout: '0%', // 2D pasta grafiği için delik yok
-    radius: '90%',
-    rotation: 0, // Döndürme yok
-    layout: {
-      padding: {
-        top: 20,
-        bottom: 20,
-        left: 20,
-        right: 120 // Sağ tarafta etiketler için daha fazla alan
-      }
-    },
-    elements: {
-      arc: {
-        borderWidth: 2,
-        borderColor: '#fff',
-        hoverBorderWidth: 3
-      }
-    },
-    animation: {
-      duration: 1000,
-      animateRotate: true,
-      animateScale: false
-    }
+    cutout: '60%',
+    radius: '90%'
   };
 
   // Anket silme işlevini ekleyelim
