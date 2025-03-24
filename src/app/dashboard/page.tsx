@@ -99,12 +99,12 @@ function Dashboard(): React.ReactElement {
 
   // Anketleri getirme
   useEffect(() => {
-    const fetchSurveys = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/surveys');
+  const fetchSurveys = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/surveys');
         
-        if (!response.ok) {
+      if (!response.ok) {
           throw new Error('Anketler getirilemedi');
         }
         
@@ -126,10 +126,10 @@ function Dashboard(): React.ReactElement {
       } catch (error) {
         console.error('Anketleri getirme hatası:', error);
         setError('Anketler yüklenirken bir hata oluştu');
-      } finally {
-        setLoading(false);
-      }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
     fetchSurveys();
   }, [refreshTrigger]); // refreshTrigger değiştiğinde anketleri tekrar getir
@@ -143,11 +143,11 @@ function Dashboard(): React.ReactElement {
         try {
           const response = await fetch(`/api/surveys/${selectedSurveyId}`);
           
-          if (!response.ok) {
+      if (!response.ok) {
             throw new Error('Yanıtlar getirilemedi');
-          }
+      }
           
-          const data = await response.json();
+      const data = await response.json();
           
           // API'den gelen yanıtları uygulama için uygun formata dönüştür
           if (data.responses && Array.isArray(data.responses)) {
@@ -439,7 +439,7 @@ function Dashboard(): React.ReactElement {
       const response = await fetch(`/api/surveys/${surveyToDelete}`, { 
         method: 'DELETE' 
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Silme işlemi başarısız oldu');
@@ -555,8 +555,8 @@ function Dashboard(): React.ReactElement {
                   Seçili Anket: {surveys.find(s => s.id === selectedSurveyId)?.title}
                   {viewMode === 'edit' && ' (Düzenleme Modu)'}
                   {viewMode === 'responses' && ' (Yanıt Görüntüleme)'}
-                </div>
-              )}
+        </div>
+      )}
             </div>
           </div>
         </div>
@@ -851,7 +851,7 @@ function Dashboard(): React.ReactElement {
                         <div className="flex flex-col items-center">
                           <div className="text-3xl mb-1" style={{color: 'rgb(220, 53, 69)'}}>😠</div>
                           <div className="text-sm font-medium">1 - Çok Kötü</div>
-                        </div>
+                      </div>
                     </div>
                   </div>
 

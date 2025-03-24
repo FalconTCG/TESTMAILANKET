@@ -1,9 +1,1 @@
-{
-  "/page": "app/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/api/surveys/[id]/respond/route": "app/api/surveys/[id]/respond/route.js",
-  "/api/surveys/route": "app/api/surveys/route.js",
-  "/api/surveys/[id]/route": "app/api/surveys/[id]/route.js",
-  "/create/page": "app/create/page.js",
-  "/api/templates/route": "app/api/templates/route.js"
-}
+{}

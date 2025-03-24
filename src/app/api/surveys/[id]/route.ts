@@ -46,8 +46,13 @@ export async function GET(
     const totalRatingPoints = responses.reduce((sum, response) => sum + response.rating, 0);
     const averageRating = responses.length > 0 ? totalRatingPoints / responses.length : 0;
 
-    // Get unique responder emails
-    const responseEmails = [...new Set(responses.map((r) => r.email))];
+    // Get unique responder emails without using Set
+    const responseEmails = Object.keys(
+      responses.reduce((acc, response) => {
+        acc[response.email] = true;
+        return acc;
+      }, {} as Record<string, boolean>)
+    );
 
     return NextResponse.json({
       survey,
