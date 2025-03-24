@@ -1,24 +1,19 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "npm run build || exit 0",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "skipBuildRegExp": "dashboard/|dashboard-view/"
-      }
+      "source": "/dashboard/:path*",
+      "destination": "/dashboard-view"
     }
   ],
-  "routes": [
-    { 
-      "src": "/dashboard", 
-      "status": 302,
-      "headers": { "Location": "/dashboard-view" }
-    },
-    { 
-      "src": "/dashboard/(.*)", 
-      "status": 302,
-      "headers": { "Location": "/dashboard-view" }
+  "redirects": [
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard-view",
+      "permanent": false
     }
   ]
 } 

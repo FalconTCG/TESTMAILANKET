@@ -1,10 +1,7 @@
-// Static content with no imports or hooks
+// Empty dashboard page with static config
+export const dynamic = 'force-static';
+export const generateStaticParams = () => [];
+
 export default function Dashboard() {
-  return (
-    <div>
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <p>Redirecting to Dashboard...</p>
-      </div>
-    </div>
-  );
+  return <div></div>;
 } 
