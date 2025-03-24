@@ -12,6 +12,9 @@ import {
   Title,
 } from 'chart.js';
 
+// Dynamic export to disable static rendering
+export const dynamic = 'force-dynamic';
+
 // ChartJS'i kaydet
 ChartJS.register(
   ArcElement,
@@ -20,21 +23,30 @@ ChartJS.register(
   Title
 );
 
-// Linter hatalarını önlemek için açık bir dönüş tipi belirtiyorum
+// useSearchParams içeren bir istemci bileşeni
+function SearchParamsContent() {
+  const searchParams = useSearchParams();
+  // Bu değer bileşene geçirilebilir
+  const initialSurveyId = searchParams.get('surveyId');
+  const initialView = searchParams.get('view');
+  
+  return <DashboardContent initialSurveyId={initialSurveyId} initialView={initialView} />;
+}
+
+// Ana Dashboard bileşeni
 function Dashboard(): React.ReactElement {
   return (
     <Suspense fallback={<div className="text-center py-10">Yükleniyor...</div>}>
-      <DashboardContent />
+      <SearchParamsContent />
     </Suspense>
   );
 }
 
-function DashboardContent(): React.ReactElement {
-  const searchParams = useSearchParams();
+function DashboardContent({ initialSurveyId, initialView }: { initialSurveyId: string | null, initialView: string | null }): React.ReactElement {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSurveyId, setSelectedSurveyId] = useState<string | null>(null);
+  const [selectedSurveyId, setSelectedSurveyId] = useState<string | null>(initialSurveyId);
   const [surveyResponses, setSurveyResponses] = useState<any[]>([]);
   
   // View mode state (normal, edit, responses)
@@ -75,22 +87,20 @@ function DashboardContent(): React.ReactElement {
 
   // URL'den surveyId ve view alınacak
   useEffect(() => {
-    const surveyId = searchParams.get('surveyId');
-    const view = searchParams.get('view');
+    const surveyId = initialSurveyId;
+    const view = initialView;
     
     if (surveyId) {
       setSelectedSurveyId(surveyId);
-    }
-    
-    // View mode kontrolü
-    if (view === 'edit') {
-      setViewMode('edit');
-    } else if (view === 'responses') {
-      setViewMode('responses');
+      if (view === 'edit') {
+        setViewMode('edit');
+      } else {
+        setViewMode('normal');
+      }
     } else {
       setViewMode('normal');
     }
-  }, [searchParams]);
+  }, [initialSurveyId, initialView]);
 
   // Düzenleme modunda anket verilerini form içine doldur
   useEffect(() => {
