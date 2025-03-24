@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next",
+      "config": {
+        "skipBuildRegExp": "dashboard/|dashboard-view/"
+      }
+    }
+  ],
+  "routes": [
+    { 
+      "src": "/dashboard", 
+      "status": 302,
+      "headers": { "Location": "/dashboard-view" }
+    },
+    { 
+      "src": "/dashboard/(.*)", 
+      "status": 302,
+      "headers": { "Location": "/dashboard-view" }
+    }
+  ]
+} 
