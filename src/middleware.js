@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 
 // Middleware function to handle redirects
 export function middleware(request) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
   
-  // Redirect /dashboard to /dashboard-view
-  if (pathname === '/dashboard') {
-    return NextResponse.redirect(new URL('/dashboard-view', request.url));
+  // Redirect all dashboard paths to dashboard-view
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+    // Preserve any query parameters
+    const targetUrl = new URL('/dashboard-view' + search, request.url);
+    return NextResponse.redirect(targetUrl);
   }
   
   // For all other routes, continue normal processing
@@ -16,7 +18,8 @@ export function middleware(request) {
 // Configure which paths should trigger this middleware
 export const config = {
   matcher: [
-    // Match exact dashboard path only
-    '/dashboard'
+    // Match dashboard and all of its sub-routes
+    '/dashboard',
+    '/dashboard/:path*'
   ],
 }; 

@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {},
+  experimental: {
+    outputFileTracingExcludes: {
+      '/dashboard/**': true
+    }
+  },
   webpack: (config) => {
     config.module.rules.push({
       test: /\.css$/,
@@ -9,6 +13,9 @@ const nextConfig = {
     });
     return config;
   },
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: true,
+  output: 'standalone',
 };
 
 module.exports = nextConfig; 

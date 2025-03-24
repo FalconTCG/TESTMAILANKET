@@ -19,6 +19,10 @@ ChartJS.register(
   Title
 );
 
+// Some direct exports to control page behavior
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 export default function DashboardView() {
   const [mounted, setMounted] = useState(false);
   const [surveys, setSurveys] = useState([]);
