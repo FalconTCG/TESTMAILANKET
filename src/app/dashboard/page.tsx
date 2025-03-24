@@ -3,7 +3,8 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+// useSearchParams'ı kaldırıyoruz çünkü client component'ten gelecek
+// import { useSearchParams } from 'next/navigation';
 import { 
   Chart as ChartJS, 
   ArcElement,
@@ -23,26 +24,14 @@ ChartJS.register(
   Title
 );
 
-// useSearchParams içeren bir istemci bileşeni
-function SearchParamsContent() {
-  const searchParams = useSearchParams();
-  // Bu değer bileşene geçirilebilir
-  const initialSurveyId = searchParams.get('surveyId');
-  const initialView = searchParams.get('view');
-  
-  return <DashboardContent initialSurveyId={initialSurveyId} initialView={initialView} />;
-}
-
-// Ana Dashboard bileşeni
-function Dashboard(): React.ReactElement {
-  return (
-    <Suspense fallback={<div className="text-center py-10">Yükleniyor...</div>}>
-      <SearchParamsContent />
-    </Suspense>
-  );
-}
-
-function DashboardContent({ initialSurveyId, initialView }: { initialSurveyId: string | null, initialView: string | null }): React.ReactElement {
+// Ana Dashboard bileşeni - artık useSearchParams içermiyor
+export default function Dashboard({ 
+  initialSurveyId, 
+  initialView 
+}: { 
+  initialSurveyId: string | null, 
+  initialView: string | null 
+}): React.ReactElement {
   const [surveys, setSurveys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -905,6 +894,4 @@ function DashboardContent({ initialSurveyId, initialView }: { initialSurveyId: s
       )}
     </div>
   );
-} 
-
-export default Dashboard;
+}
